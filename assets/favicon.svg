@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#171717"/>
+  <path d="M17 15h30" fill="none" stroke="#B49A78" stroke-linecap="round" stroke-width="1.5"/>
+  <text x="32" y="48" fill="#F8F6F1" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-style="italic" text-anchor="middle">É</text>
+  <circle cx="47" cy="15" r="2" fill="#B49A78"/>
+</svg>
