@@ -104,7 +104,7 @@ form.addEventListener('input',()=>{
 form.addEventListener('change',()=>{
   if(form.classList.contains('was-validated'))updateInvalidFields();
 });
-form.addEventListener('submit',event=>{
+form.addEventListener('submit',async event=>{
   event.preventDefault();
   form.classList.add('was-validated');
   updateInvalidFields();
@@ -114,17 +114,54 @@ form.addEventListener('submit',event=>{
     return;
   }
 
+  const submit=form.querySelector('button[type="submit"]');
+  const message=$('#checkoutFormMessage');
+  submit.disabled=true;
+  submit.setAttribute('aria-busy','true');
+  message.textContent='Sending your order approval email...';
   try{
-    localStorage.removeItem('elvare_cart');
-  }catch{
-    $('#checkoutFormMessage').textContent='Your order could not be completed because the saved bag could not be updated. Please try again.';
-    return;
-  }
+    const formData=new FormData(form);
+    const requestId=crypto.randomUUID();
+    const response=await fetch('/api/order',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        requestId,
+        name:formData.get('name'),
+        email:formData.get('email'),
+        phone:formData.get('phone'),
+        address:formData.get('address'),
+        city:formData.get('city'),
+        region:formData.get('region'),
+        postalCode:formData.get('postalCode'),
+        note:formData.get('note'),
+        payment:formData.get('payment'),
+        items:Object.entries(readStorage('elvare_cart',{})).map(([id,quantity])=>({id:Number(id),quantity}))
+      })
+    });
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'We could not submit your order. Please try again.');
+    if(result.status==='confirmed'){
+      message.textContent='This order has already been confirmed.';
+      return;
+    }
 
-  $('#checkoutContent').hidden=true;
-  $('#checkoutError').hidden=true;
-  $('#orderReference').textContent=`Demo reference · ELV-${Date.now().toString(36).toUpperCase()}`;
-  renderOrderLines(lines,$('#confirmedItems'),false);
-  $('#orderSuccess').hidden=false;
-  window.scrollTo({top:0,behavior:'smooth'});
+    localStorage.removeItem('elvare_cart');
+    $('#checkoutContent').hidden=true;
+    $('#checkoutError').hidden=true;
+    $('#orderReference').textContent=`Pending demo order · ${escapeHTML(result.reference)}`;
+    renderOrderLines(result.items.map(item=>({
+      product:{n:item.name,c:item.category,i:item.photo,p:item.price},
+      quantity:item.quantity
+    })),$('#confirmedItems'),false);
+    $('#orderSuccess').hidden=false;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(error){
+    message.textContent=error instanceof Error
+      ?error.message
+      :'We could not submit your order. Please try again.';
+  }finally{
+    submit.disabled=false;
+    submit.removeAttribute('aria-busy');
+  }
 });

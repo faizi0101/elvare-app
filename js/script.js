@@ -127,20 +127,36 @@ $('#newsForm').addEventListener('submit',e=>{
 $('#contactForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const form=e.currentTarget,button=form.querySelector('button[type="submit"]'),message=$('#contactMessage');
+  const email=form.querySelector('input[name="email"]');
+  if(email.value&&!email.validity.valid){
+    message.className='contact-form-message err';
+    message.textContent='Incorrect email address. Enter a valid email address and try again.';
+    email.focus();
+    return;
+  }
   if(!form.reportValidity())return;
+  const accessKey=form.elements.access_key.value.trim();
+  if(!accessKey||accessKey==='YOUR_WEB3FORMS_ACCESS_KEY'){
+    message.className='contact-form-message err';
+    message.textContent='Contact form setup is incomplete. Add your Web3Forms access key to continue.';
+    return;
+  }
   button.disabled=true;
   button.setAttribute('aria-busy','true');
   message.className='contact-form-message';
   message.textContent='Sending your message...';
   try{
-    const fields=new URLSearchParams();
-    new FormData(form).forEach((value,key)=>fields.append(key,String(value)));
-    const response=await fetch(form.action,{method:'POST',headers:{Accept:'application/json'},body:fields});
+    const formData=Object.fromEntries(new FormData(form).entries());
+    const response=await fetch(form.action,{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify(formData)
+    });
     const result=await response.json();
     if(!response.ok||!result.success)throw new Error(result.message||'Your message could not be sent. Please try again.');
     form.reset();
     message.className='contact-form-message ok';
-    message.textContent='Thank you. Your message has been received; we’ll be in touch soon.';
+    message.textContent=result.message||'Thank you. Your message has been sent to ÉLVARÉ.';
   }catch(error){
     message.className='contact-form-message err';
     message.textContent=error instanceof Error?error.message:'Your message could not be sent. Please try again.';

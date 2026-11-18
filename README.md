@@ -20,30 +20,47 @@ An internet connection is needed for Bootstrap, icons, fonts and Unsplash photos
 ## Features
 Add to cart, live counter, cart sidebar, quantity change, remove item, subtotal, search, category filter, wishlist, quick-view modal, newsletter validation, responsive delivery checkout, demo cash-on-delivery and Easypaisa payment options, mobile menu, smooth scrolling, scroll reveal, hero parallax.
 Cart and wishlist persist with localStorage.
-Checkout is a front-end exhibition demo only; it does not transmit customer data or process payments.
-The contact form delivers enquiries to it.me.faizan.khan08@gmail.com through FormSubmit. Confirm the activation email sent by FormSubmit after the first submission before expecting enquiries to arrive.
+Checkout remains a demo only: it does not process payments. Orders are stored as pending and confirmed only after the customer clicks the approval link sent to their email. Contact enquiries are sent through Web3Forms to the recipient associated with your access key; Web3Forms does not verify that a visitor owns the reply-to email address.
 
 ## Firebase Hosting
 This is a static website, so Firebase Hosting can serve it without a backend. The responsive layout works on desktop and mobile browsers. Firebase Hosting provides HTTPS and a free `web.app` URL.
 
-This project is connected to Firebase project `elvare-app` in `.firebaserc`. The `firebase.json` configuration serves the project root, excludes `.venv` and Git files, and does not rewrite the checkout page to `index.html`.
+This project is connected to Firebase project `elvare-app` in `.firebaserc`. Hosting serves the project root, excludes `.venv` and Git files, and routes `/api/**` requests to the Functions backend in Mumbai (`asia-south1`). Firestore rules deny direct browser access; only the backend accesses demo order records. Firestore TTL policies delete unverified orders after 24 hours and confirmed order records after 7 days. The contact form uses Web3Forms and does not require the Firebase backend.
+
+The order-verification backend is implemented in `functions/`, but it is not live until Firestore is enabled, billing is configured, the Gmail secret is set, and the Firebase resources below are deployed. Until then, email-approved orders are unavailable. The contact form can work independently as soon as its Web3Forms access key is configured.
+
+### Configure the contact form (Web3Forms)
+1. Create a free access key at [web3forms.com](https://web3forms.com/) for `it.me.faizan.khan08@gmail.com` and retrieve the key from the email they send you.
+2. In `index.html`, replace `YOUR_WEB3FORMS_ACCESS_KEY` in the contact form's hidden `access_key` field with that key. Web3Forms access keys are designed to be public in frontend code; do not use a password or Gmail App Password here.
+3. Submit the contact form on the live site to test delivery. The form reports success only when Web3Forms accepts the submission. Invalid email formats are rejected by the browser; a syntactically valid but unreachable address cannot be proven or rejected without an email-verification flow.
+
+The form content is sent to Web3Forms to deliver to the email address associated with the access key. Replies use the visitor-provided email as the reply-to address; that address is not authenticated.
 
 ### Deploy
-1. Make sure your Google account has access to the `elvare-app` Firebase project.
-2. Install Node.js, then install and sign in to the Firebase CLI:
+1. Make sure your Google account has access to Firebase project `elvare-app`. Enable the **Cloud Firestore API** for this project in [Google Cloud Console](https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=elvare-app).
+2. Create the default Firestore database in Mumbai (`asia-south1`) if one does not already exist. Database location is permanent:
+   ```powershell
+   firebase firestore:databases:create "(default)" --location asia-south1 --project elvare-app
+   ```
+3. Cloud Functions deployment requires the Firebase **Blaze** (pay-as-you-go) plan and a billing account. Review Firebase pricing and set a budget alert before enabling billing.
+4. Enable 2-Step Verification on the Gmail sender account, create a Google App Password, then store it as a Firebase secret. Run this in your own terminal and enter the App Password only at the CLI prompt; never put it in source code or commit it:
+   ```powershell
+   firebase functions:secrets:set GMAIL_APP_PASSWORD --project elvare-app
+   ```
+   The sender and contact destination are `it.me.faizan.khan08@gmail.com`.
+5. Install Node.js 22 and the Firebase CLI if needed, sign in, install the Functions dependencies, and deploy Hosting, the API, and Firestore rules:
    ```powershell
    npm install -g firebase-tools
    firebase login
-   ```
-3. In a terminal, open this project folder and deploy:
-   ```powershell
    cd "D:\Web Tech Project\ecommerce-project"
-   firebase deploy --only hosting
+   cd functions
+   npm install
+   cd ..
+   firebase deploy --only firestore:rules,functions,hosting --project elvare-app
    ```
-   The site URL is [https://elvare-app.web.app](https://elvare-app.web.app) (also available at `https://elvare-app.firebaseapp.com`).
-4. After making site changes, run `firebase deploy --only hosting` again to publish them.
+6. The site URL is [https://elvare-app.web.app](https://elvare-app.web.app) (also available at `https://elvare-app.firebaseapp.com`). After website changes, deploy Hosting again; after backend or rules changes, deploy the corresponding Firebase targets.
 
-See the official [Firebase Hosting quickstart](https://firebase.google.com/docs/hosting/quickstart) for details. The contact form uses FormSubmit; confirm its activation email after the first submission before expecting enquiries to arrive.
+Email verification proves that someone can open the message sent to that address; it cannot tell you in advance whether a syntactically valid but unreachable mailbox exists. Firestore TTL cleanup is asynchronous and may take up to 24 hours after the configured expiry. Cloud Functions and Firestore usage can incur charges, so monitor usage and billing.
 
 ## Files
 index.html - storefront. checkout.html - responsive checkout and order confirmation. assets/favicon.svg - ÉLVARÉ browser icon. css/style.css - custom styling. js/script.js - store interactions. js/checkout.js - checkout validation and demo confirmation.

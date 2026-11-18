@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Confirm your request | ÉLVARÉ</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{font-family:"Jost",sans-serif;color:#171717;background:#f8f6f1}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;padding:24px;display:grid;place-items:center}
+    main{width:min(100%,560px);padding:clamp(28px,7vw,56px);background:#fff;border:1px solid #d8d0c4}
+    .logo{margin:0;color:#9f8463;letter-spacing:.3em;font:500 1rem "Jost",sans-serif}
+    h1{margin:2rem 0 1rem;font:400 clamp(2.7rem,9vw,4.2rem)/.95 "Cormorant Garamond",serif}
+    p{color:#81796f;line-height:1.75}
+    button,.button{display:inline-flex;justify-content:center;align-items:center;min-height:50px;margin-top:1rem;padding:0 1.5rem;border:1px solid #171717;background:#171717;color:#fff;font:500 .72rem "Jost",sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;cursor:pointer}
+    button:focus-visible,.button:focus-visible{outline:3px solid #b49a78;outline-offset:3px}
+    button:disabled{opacity:.6;cursor:wait}
+    [role=status]{min-height:1.5rem;margin-top:1rem;font-size:.85rem}
+    [role=status].error{color:#a3453d}
+  </style>
+</head>
+<body>
+  <main>
+    <p class="logo">ÉLVARÉ</p>
+    <h1 id="title">Confirm your request.</h1>
+    <p id="description">Choose the button below to verify this email address and complete your request. Opening this page alone does not confirm anything.</p>
+    <button id="confirmButton" type="button">Confirm email</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <a class="button" href="index.html">Return to ÉLVARÉ</a>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.hash.slice(1));
+    const kind=params.get('kind');
+    const token=params.get('token');
+    const button=document.querySelector('#confirmButton');
+    const title=document.querySelector('#title');
+    const description=document.querySelector('#description');
+    const status=document.querySelector('#status');
+    if(kind==='order'){
+      title.textContent='Approve your demo order.';
+      description.textContent='Confirm that you want this demo order marked as approved. No payment will be taken.';
+      button.textContent='Approve demo order';
+    }else if(kind==='contact'){
+      title.textContent='Verify your email address.';
+      description.textContent='Your contact message will only be delivered after you verify that you own this email address.';
+      button.textContent='Verify email and send message';
+    }else{
+      button.disabled=true;
+      status.textContent='This confirmation link is incomplete or invalid.';
+      status.classList.add('error');
+    }
+    history.replaceState(null,'',location.pathname);
+    button.addEventListener('click',async()=>{
+      if(!token||!['contact','order'].includes(kind))return;
+      button.disabled=true;
+      status.classList.remove('error');
+      status.textContent='Verifying...';
+      try{
+        const response=await fetch('/api/verify',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({kind,token})
+        });
+        const result=await response.json();
+        if(!response.ok)throw new Error(result.error||'We could not verify this request.');
+        title.textContent=kind==='order'?'Your order is approved.':'Email verified.';
+        description.textContent=result.message;
+        status.textContent='You can safely close this page.';
+        button.hidden=true;
+      }catch(error){
+        status.textContent=error instanceof Error?error.message:'We could not verify this request. Please try again.';
+        status.classList.add('error');
+        button.disabled=false;
+      }
+    });
+  </script>
+</body>
+</html>

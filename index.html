@@ -249,12 +249,13 @@
               <span class="contact-icon"><i class="bi bi-chat-heart"></i></span>
               <div><span class="contact-label">How we can help</span><p>Orders, product questions, returns, and collaborations.</p></div>
             </div>
-            <p class="contact-note">Your message and contact details are shared with FormSubmit to deliver your enquiry by email.</p>
+            <p class="contact-note">Your message is sent to ÉLVARÉ through Web3Forms. Use an email address where we can reach you; replies go to the address you enter.</p>
           </div>
-          <form class="contact-form reveal" id="contactForm" action="https://formsubmit.co/ajax/it.me.faizan.khan08@gmail.com" method="POST">
-            <input type="hidden" name="_subject" value="New ÉLVARÉ contact request">
-            <input type="hidden" name="_template" value="table">
-            <label class="contact-honeypot" aria-hidden="true">Leave this field empty<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
+          <form class="contact-form reveal" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="50cf27e4-586a-4753-ba84-fbd62a595741">
+            <input type="hidden" name="subject" value="New ÉLVARÉ contact request">
+            <input type="hidden" name="from_name" value="ÉLVARÉ Website">
+            <input class="contact-honeypot" type="checkbox" name="botcheck" tabindex="-1" aria-hidden="true">
             <div class="contact-fields">
               <label class="contact-field">
                 <span>Your name</span>
@@ -296,7 +297,7 @@
         <div><h6>Maison</h6><a href="#story">Our story</a><a href="#journal">Journal</a><a href="#contact">Contact</a></div>
         <div><h6>Client care</h6><a href="#">Delivery & returns</a><a href="#">Care guide</a><a href="mailto:it.me.faizan.khan08@gmail.com">it.me.faizan.khan08@gmail.com</a></div>
       </div>
-      <div class="footer-bottom"><span>© 2026 ÉLVARÉ</span><div><a href="#" aria-label="Instagram">Instagram</a><a href="#" aria-label="Pinterest">Pinterest</a></div></div>
+      <div class="footer-bottom"><span>© 2026 ÉLVARÉ</span></div>
     </div>
   </footer>
 
