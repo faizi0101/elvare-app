@@ -26,40 +26,22 @@ The contact form delivers enquiries to it.me.faizan.khan08@gmail.com through For
 ## Firebase Hosting
 This is a static website, so Firebase Hosting can serve it without a backend. The responsive layout works on desktop and mobile browsers. Firebase Hosting provides HTTPS and a free `web.app` URL.
 
+This project is connected to Firebase project `elvare-app` in `.firebaserc`. The `firebase.json` configuration serves the project root, excludes `.venv` and Git files, and does not rewrite the checkout page to `index.html`.
+
 ### Deploy
-1. Create a project in the [Firebase Console](https://console.firebase.google.com/).
+1. Make sure your Google account has access to the `elvare-app` Firebase project.
 2. Install Node.js, then install and sign in to the Firebase CLI:
    ```powershell
    npm install -g firebase-tools
    firebase login
    ```
-3. In a terminal, open this project folder and initialize Hosting:
+3. In a terminal, open this project folder and deploy:
    ```powershell
    cd "D:\Web Tech Project\ecommerce-project"
-   firebase init hosting
-   ```
-4. Select the Firebase project you created. Set the public directory to `.`, choose **No** for single-page app rewrites (the site has both `index.html` and `checkout.html`), and do not overwrite the existing `index.html`.
-5. In the generated `firebase.json`, set the Hosting configuration so the project root is public and the virtual environment and README are not deployed:
-   ```json
-   {
-     "hosting": {
-       "public": ".",
-       "ignore": [
-         "firebase.json",
-         "**/.*",
-         "**/node_modules/**",
-         ".venv/**",
-         "README.md"
-       ]
-     }
-   }
-   ```
-6. Deploy the site:
-   ```powershell
    firebase deploy --only hosting
    ```
-   The CLI prints the live `https://<project-id>.web.app` URL (also available at `https://<project-id>.firebaseapp.com`).
-7. After making site changes, run `firebase deploy --only hosting` again to publish them.
+   The site URL is [https://elvare-app.web.app](https://elvare-app.web.app) (also available at `https://elvare-app.firebaseapp.com`).
+4. After making site changes, run `firebase deploy --only hosting` again to publish them.
 
 See the official [Firebase Hosting quickstart](https://firebase.google.com/docs/hosting/quickstart) for details. The contact form uses FormSubmit; confirm its activation email after the first submission before expecting enquiries to arrive.
 
